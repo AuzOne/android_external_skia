@@ -515,6 +515,7 @@ LOCAL_SRC_FILES := \
 
 LOCAL_SHARED_LIBRARIES := \
 	liblog \
+	libdl \
 	libGLESv2 \
 	libEGL \
 	libz \
@@ -523,8 +524,7 @@ LOCAL_SHARED_LIBRARIES := \
 	libicuuc \
 	libicui18n \
 	libexpat \
-	libft2 \
-	libcutils
+	libft2
 
 LOCAL_STATIC_LIBRARIES := \
 	libwebp-decode \
@@ -600,7 +600,14 @@ LOCAL_SRC_FILES_arm += \
 	src/opts/SkXfermode_opts_arm.cpp
 
 ifeq ($(ARCH_ARM_HAVE_NEON), true)
+
+LOCAL_CFLAGS += -DNEON_BLITANTIH
+LOCAL_SRC_FILES += \
+	src/core/asm/SkBlitter_RGB16_NEON.S
+
 LOCAL_SRC_FILES_arm += \
+	src/opts/S32A_Opaque_BlitRow32_neon.S \
+	src/opts/S32A_Blend_BlitRow32_neon.S \
 	src/opts/memset16_neon.S \
 	src/opts/memset32_neon.S \
 	src/opts/SkBitmapProcState_arm_neon.cpp \
@@ -609,12 +616,18 @@ LOCAL_SRC_FILES_arm += \
 	src/opts/SkBlitRow_opts_arm_neon.cpp \
 	src/opts/SkBlurImage_opts_neon.cpp \
 	src/opts/SkMorphology_opts_neon.cpp \
-	src/opts/SkXfermode_opts_arm_neon.cpp
+	src/opts/SkXfermode_opts_arm_neon.cpp \
+	src/opts/ext/S32_Opaque_D32_filter_DX_shaderproc_neon.cpp \
+	src/opts/D32_A8_Black_Neon.S
 
 LOCAL_CFLAGS_arm += \
 	-D__ARM_HAVE_NEON
 
 endif
+
+# Enable Neon assembler optimized version of S32A_Opaque_BlitRow32 and
+# S32A_Blend_Blitrow32. Overrides the intrinsic blitter below.
+LOCAL_CFLAGS += -DENABLE_OPTIMIZED_S32A_BLITTERS
 
 LOCAL_CFLAGS_x86 += \
 	-msse2 \
